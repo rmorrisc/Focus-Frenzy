@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Frenzy – Reaction Game</title>
+  <meta name="description" content="Test how long you can stay focused. A fast, addictive reaction game built for quick replays." />
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #020617);
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .container {
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 14px 22px;
+      font-size: 18px;
+      background: #6366f1;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background: #4f46e5; }
+    #gameArea {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      background: #020617;
+      border-radius: 16px;
+      margin-top: 20px;
+      display: none;
+      overflow: hidden;
+    }
+    .target {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #22c55e;
+      cursor: pointer;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #cbd5f5;
+    }
+    .gameover {
+      display: none;
+      margin-top: 20px;
+      font-size: 20px;
+    }
+    footer {
+      margin-top: 25px;
+      font-size: 13px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Focus Frenzy</h1>
+    <p>Click the green dot as fast as you can. It speeds up. Miss once = game over.</p>
+
+    <button id="startBtn">Start Game</button>
+
+    <div id="gameArea"></div>
+
+    <div class="stats" id="stats" style="display:none;">
+      <div>Time: <span id="time">0.0</span>s</div>
+      <div>Speed: <span id="speed">1.0x</span></div>
+    </div>
+
+    <div class="gameover" id="gameOver"></div>
+
+    <footer>
+      Built to test focus • Play again to beat your score
+    </footer>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const gameArea = document.getElementById('gameArea');
+    const stats = document.getElementById('stats');
+    const timeEl = document.getElementById('time');
+    const speedEl = document.getElementById('speed');
+    const gameOverEl = document.getElementById('gameOver');
+
+    let startTime, timerInterval, speed, active;
+
+    function randomPosition() {
+      const size = 40;
+      const x = Math.random() * (gameArea.clientWidth - size);
+      const y = Math.random() * (gameArea.clientHeight - size);
+      return { x, y };
+    }
+
+    function spawnTarget() {
+      gameArea.innerHTML = '';
+      const target = document.createElement('div');
+      target.className = 'target';
+      const pos = randomPosition();
+      target.style.left = pos.x + 'px';
+      target.style.top = pos.y + 'px';
+      gameArea.appendChild(target);
+
+      target.onclick = () => {
+        speed += 0.1;
+        speedEl.textContent = speed.toFixed(1) + 'x';
+        spawnTarget();
+      };
+
+      setTimeout(() => {
+        if (gameArea.contains(target)) endGame();
+      }, Math.max(400, 1200 / speed));
+    }
+
+    function startGame() {
+      startBtn.style.display = 'none';
+      gameOverEl.style.display = 'none';
+      gameArea.style.display = 'block';
+      stats.style.display = 'flex';
+      speed = 1;
+      active = true;
+      startTime = Date.now();
+
+      timerInterval = setInterval(() => {
+        timeEl.textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+      }, 100);
+
+      spawnTarget();
+    }
+
+    function endGame() {
+      if (!active) return;
+      active = false;
+      clearInterval(timerInterval);
+      gameArea.innerHTML = '';
+      gameArea.style.display = 'none';
+      stats.style.display = 'none';
+      gameOverEl.style.display = 'block';
+      gameOverEl.innerHTML = `Game Over 😵<br>You lasted <b>${timeEl.textContent}s</b><br><br><button onclick="startGame()">Play Again</button>`;
+    }
+
+    startBtn.onclick = startGame;
+  </script>
+</body>
+</html>
